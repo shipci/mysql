@@ -18,7 +18,8 @@
     "lingo": "~0.0.5",
     "mongo-sql": "git://github.com/alexmingoia/mongo-sql.git#master",
     "mysql": "~2.0.0",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "debug": "~0.7.4"
   },
   "devDependencies": {
     "mocha": "~1.12.1",
@@ -27,8 +28,7 @@
     "supertest": "~0.7.1",
     "mocha-lcov-reporter": "~0.0.1",
     "jscoverage": "~0.3.8",
-    "coveralls": "~2.6.0",
-    "debug": "~0.7.4"
+    "coveralls": "~2.6.0"
   },
   "main": "./lib/mysql.js",
   "scripts": {
