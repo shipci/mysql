@@ -135,6 +135,9 @@ describe('adapter', function() {
       var userB = new User({id: 2, name: 'jeff'});
       var query = User.adapter.settings.db.query;
       User.adapter.settings.db.query = function(statement, values, callback) {
+        User.adapter.settings.db.query = function(statement, values, callback) {
+          callback(null, [userA.attributes, userB.attributes], userB.attributes);
+        };
         statement.sql.should.include(
           'from "user" where "user"."id" = $1 or "user"."name" = $2'
         );
@@ -218,14 +221,17 @@ describe('adapter', function() {
       var query = User.adapter.settings.db.query;
       User.adapter.settings.db.query = function(statement, values, callback) {
         User.adapter.settings.db.query = function(statement, values, callback) {
-          User.adapter.settings.db.query = query;
-          values.should.be.instanceOf(Array);
-          values.should.have.property(2, 25);
-          values.should.have.property(3, 75);
-          statement.sql.should.include(
-            'from "user" where "user"."id" = $1 ' +
-            'or "user"."name" = $2 limit $3 offset $4'
-          );
+          User.adapter.settings.db.query = function(statement, values, callback) {
+            User.adapter.settings.db.query = query;
+            values.should.be.instanceOf(Array);
+            values.should.have.property(2, 25);
+            values.should.have.property(3, 75);
+            statement.sql.should.include(
+              'from "user" where "user"."id" = $1 ' +
+              'or "user"."name" = $2 limit $3 offset $4'
+            );
+            callback(null, [userA.attributes, userB.attributes], userB.attributes);
+          };
           callback(null, [userA.attributes, userB.attributes], userB.attributes);
         };
         for (var key in userA.attributes) {
@@ -258,11 +264,9 @@ describe('adapter', function() {
         User.adapter.settings.db.query = function(statement, values, callback) {
           User.adapter.settings.db.query = query;
           values.should.be.instanceOf(Array);
-          values.should.have.property(2, 25);
-          values.should.have.property(3, 75);
           statement.sql.should.include(
             'from "user" where "user"."id" = $1 ' +
-            'or "user"."name" = $2 limit $3 offset $4'
+            'or "user"."name" = $2'
           );
           callback(null, [userA.attributes, userB.attributes], userB.attributes);
         };
@@ -272,7 +276,9 @@ describe('adapter', function() {
         for (var key in userB.attributes) {
           userB.attributes[User.options.tableName + '_' + key] = userB.attributes[key];
         }
-        callback(null, [{ _count: 107 }], userB.attributes);
+        var collection = [];
+        collection.length = 107;
+        callback(null, collection, userB.attributes);
       };
       User.all(
         { $or: { id: userA.primary, name: "jeff" }, page: 4, pageSize: 25 },
@@ -613,6 +619,9 @@ describe('adapter', function() {
     it('converts boolean attributes to 1 or 0', function(done) {
       var query = User.adapter.settings.db.query;
       User.adapter.settings.db.query = function(statement, values, cb) {
+        User.adapter.settings.db.query = function(statement, values, cb) {
+          cb(null, [{ user_id: 1 }], { id: 1 });
+        };
         statement.sql.should.include('active" = $1');
         statement.sql.should.include('flagged" = $2');
         values.should.include(1);
@@ -625,34 +634,26 @@ describe('adapter', function() {
       });
     });
   });
-});
 
-describe('collection', function() {
-  var User = mio.createModel('User').attr('id').attr('name');
-  User.use(mysql(settings));
-
-  describe('#toJSON()', function() {
-    it('includes pagination properties', function(done) {
-      User.adapter.settings.pool = {
-        getConnection: function(cb) {
-          cb(null, {
-            release: function() {},
-            query: function(statement, values, cb) {
-              cb(null, [{ user_id: 1 }], { id: 1 });
-            }
-          });
-        },
-        on: function() {},
-        emit: function() {}
-      };
-      User.findAll({ created_at: 1234567890 }, function(err, collection) {
-        if (err) return done(err);
-        var json = collection.toJSON();
-        json.should.have.property('collection');
-        collection.should.have.property('length', 1);
-        json.should.have.property('offset', 0);
-        json.should.have.property('limit', 50);
-        done();
+  describe('collection', function() {
+    describe('#toJSON()', function() {
+      it('includes pagination properties', function(done) {
+        var query = User.adapter.settings.db.query;
+        User.adapter.settings.db.query = function(statement, values, cb) {
+          User.adapter.settings.db.query = function(statement, values, cb) {
+            cb(null, [{ user_id: 1 }], { id: 1 });
+          };
+          cb(null, [{ user_id: 1 }], { id: 1 });
+        };
+        User.findAll({ created_at: 1234567890 }, function(err, collection) {
+          if (err) return done(err);
+          var json = collection.toJSON();
+          json.should.have.property('collection');
+          collection.should.have.property('length', 1);
+          json.should.have.property('offset', 0);
+          json.should.have.property('limit', 50);
+          done();
+        });
       });
     });
   });
