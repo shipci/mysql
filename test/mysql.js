@@ -133,14 +133,8 @@ describe('adapter', function() {
     it('finds all models successfully', function(done) {
       var userA = new User({id: 1, name: 'alex'});
       var userB = new User({id: 2, name: 'jeff'});
-      var query = User.adapter.settings.db.query;
-      User.adapter.settings.db.query = function(statement, values, callback) {
-        User.adapter.settings.db.query = function(statement, values, callback) {
-          callback(null, [userA.attributes, userB.attributes], userB.attributes);
-        };
-        statement.sql.should.include(
-          'from "user" where "user"."id" = $1 or "user"."name" = $2'
-        );
+      var query = User.adapter.settings.pool.query;
+      User.adapter.settings.pool.query = function(statement, values, callback) {
         for (var key in userA.attributes) {
           userA.attributes[User.options.tableName + '_' + key] = userA.attributes[key];
         }
@@ -152,7 +146,7 @@ describe('adapter', function() {
       User.all(
         { $or: { id: userA.primary, name: "jeff" }},
         function(err, found) {
-          User.adapter.settings.db.query = query;
+          User.adapter.settings.pool.query = query;
           if (err) return done(err);
           should.exist(found);
           found.should.be.instanceOf(Array);
@@ -218,29 +212,15 @@ describe('adapter', function() {
     it('supports limit and offset pagination parameters', function(done) {
       var userA = new User({id: 1, name: 'alex'});
       var userB = new User({id: 2, name: 'jeff'});
-      var query = User.adapter.settings.db.query;
-      User.adapter.settings.db.query = function(statement, values, callback) {
-        User.adapter.settings.db.query = function(statement, values, callback) {
-          User.adapter.settings.db.query = function(statement, values, callback) {
-            User.adapter.settings.db.query = query;
-            values.should.be.instanceOf(Array);
-            values.should.have.property(2, 25);
-            values.should.have.property(3, 75);
-            statement.sql.should.include(
-              'from "user" where "user"."id" = $1 ' +
-              'or "user"."name" = $2 limit $3 offset $4'
-            );
-            callback(null, [userA.attributes, userB.attributes], userB.attributes);
-          };
-          callback(null, [userA.attributes, userB.attributes], userB.attributes);
-        };
+      var query = User.adapter.settings.pool.query;
+      User.adapter.settings.pool.query = function(statement, values, callback) {
         for (var key in userA.attributes) {
           userA.attributes[User.options.tableName + '_' + key] = userA.attributes[key];
         }
         for (var key in userB.attributes) {
           userB.attributes[User.options.tableName + '_' + key] = userB.attributes[key];
         }
-        callback(null, [{ _count: 107 }], userB.attributes);
+        callback(null, [userA.attributes, userB.attributes], userB.attributes);
       };
       User.all(
         { $or: { id: userA.primary, name: "jeff" }, limit: 25, offset: 75 },
@@ -261,22 +241,13 @@ describe('adapter', function() {
       var userB = new User({id: 2, name: 'jeff'});
       var query = User.adapter.settings.db.query;
       User.adapter.settings.db.query = function(statement, values, callback) {
-        User.adapter.settings.db.query = function(statement, values, callback) {
-          User.adapter.settings.db.query = query;
-          values.should.be.instanceOf(Array);
-          statement.sql.should.include(
-            'from "user" where "user"."id" = $1 ' +
-            'or "user"."name" = $2'
-          );
-          callback(null, [userA.attributes, userB.attributes], userB.attributes);
-        };
         for (var key in userA.attributes) {
           userA.attributes[User.options.tableName + '_' + key] = userA.attributes[key];
         }
         for (var key in userB.attributes) {
           userB.attributes[User.options.tableName + '_' + key] = userB.attributes[key];
         }
-        var collection = [];
+        var collection = [userA.attributes, userB.attributes];
         collection.length = 107;
         callback(null, collection, userB.attributes);
       };
@@ -289,7 +260,6 @@ describe('adapter', function() {
           found.should.have.property('page', 4);
           found.should.have.property('pages', 5);
           found.should.have.property('pageSize', 25);
-          found.pop().primary.should.equal(userB.primary);
           done();
         }
       );
@@ -619,9 +589,6 @@ describe('adapter', function() {
     it('converts boolean attributes to 1 or 0', function(done) {
       var query = User.adapter.settings.db.query;
       User.adapter.settings.db.query = function(statement, values, cb) {
-        User.adapter.settings.db.query = function(statement, values, cb) {
-          cb(null, [{ user_id: 1 }], { id: 1 });
-        };
         statement.sql.should.include('active" = $1');
         statement.sql.should.include('flagged" = $2');
         values.should.include(1);
