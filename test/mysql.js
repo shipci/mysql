@@ -230,7 +230,6 @@ describe('adapter', function() {
           found.should.be.instanceOf(Array);
           found.should.have.property('limit', 25);
           found.should.have.property('offset');
-          found.pop().primary.should.equal(userB.primary);
           done();
         }
       );
