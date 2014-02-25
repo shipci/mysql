@@ -382,7 +382,7 @@ describe('adapter', function() {
         statement.sql.should.equal(
           'select COUNT(*) as _count from "user" where "user"."name" = $1'
         );
-        cb(null, [{_count: 3}], {});
+        cb(null, [{__count: 3}], {});
       };
       User.count({ name: 'alex' }, function(err, count) {
         User.adapter.settings.db.query = query;
