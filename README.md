@@ -29,14 +29,12 @@ Create a new Mio mysql plugin with the given database `settings` and `options`.
 * `maxLimit` The maximum number of records to select at once. Default is 200.
 
 ```javascript
-var mio = require('mio');
+var User = require('mio').createModel('User');
 
-var User = mio.createModel('User');
-
-User.use('server', 'mio-mysql', {
+User.server(require('mio-mysql', {
   database: 'mydb',
   user: 'root'
-});
+}));
 ```
 
 ### Queries
@@ -82,7 +80,7 @@ User.findAll({ page: 1, pageSize: 25 }, function(err, users) {
 Custom table names are specified using the `tableName` option. For example:
 
 ```javascript
-User.use(mysql({
+User.use(require('mio-mysql')({
   database: 'mydb',
   user: 'root'
 }, {
@@ -125,9 +123,11 @@ definition's `dataFormatter` function:
 ```javascript
 var Event = mio.createModel('Event');
 
-Event.attr('date', { dataFormatter: function(value, Event) {
-  value = Math.floor(value.getTime() / 1000);
-  return value;
+Event.attr('date', {
+  dataFormatter: function(value, Event) {
+    value = Math.floor(value.getTime() / 1000);
+    return value;
+  }
 });
 ```
 
@@ -147,14 +147,16 @@ Models that share a settings object will share a connection pool, exposed via
 `settings.pool`.
 
 ```javascript
+var mysql = require('mio-mysql');
+
 var settings = {
   database: 'mydb',
   user: 'root'
 };
 
 // Both User and Post models will share the same connection.
-User.use('server', 'mio-mysql', settings);
-Post.use('server', 'mio-mysql', settings);
+User.server(mysql(settings));
+Post.server(mysql(settings));
 
 console.log(settings.pool);
 // => node-mysql connection pool object...
