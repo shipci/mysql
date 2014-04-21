@@ -15,7 +15,7 @@ mysql.mysql.createConnection = function(settings) {
       cb();
     },
     on: function(event, callback) {},
-    query: function(statement, values, done) {
+    query: function(statement, done) {
       done && done(null, [], {});
     }
   };
@@ -124,7 +124,7 @@ describe('adapter', function() {
       var userA = new User({id: 1, name: 'alex'});
       var userB = new User({id: 2, name: 'jeff'});
       var query = User.options.mysql.pool.query;
-      User.options.mysql.pool.query = function(statement, values, callback) {
+      User.options.mysql.pool.query = function(statement, callback) {
         for (var key in userA.attributes) {
           userA.attributes[User.options.mysql.tableName + '_' + key] = userA.attributes[key];
         }
@@ -149,7 +149,7 @@ describe('adapter', function() {
     it('finds models with foreign key of relation', function(done) {
       var user = new User({id: 1, name: 'alex'});
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         cb(null, [user.attributes], user.attributes);
       };
       User.findAll({ tag_id: 5 }, function(err, collection) {
@@ -162,7 +162,7 @@ describe('adapter', function() {
       var userA = new User({id: 1, name: 'alex'});
       var userB = new User({id: 2, name: 'jeff'});
       var query = User.options.mysql.pool.query;
-      User.options.mysql.pool.query = function(statement, values, callback) {
+      User.options.mysql.pool.query = function(statement, callback) {
         for (var key in userA.attributes) {
           userA.attributes[User.options.mysql.tableName + '_' + key] = userA.attributes[key];
         }
@@ -188,7 +188,7 @@ describe('adapter', function() {
       var userA = new User({id: 1, name: 'alex'});
       var userB = new User({id: 2, name: 'jeff'});
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         for (var key in userA.attributes) {
           userA.attributes[User.options.mysql.tableName + '_' + key] = userA.attributes[key];
         }
@@ -216,7 +216,7 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var user = new User({ name: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         callback(new Error('error finding users.'));
       };
       User.all(
@@ -241,10 +241,10 @@ describe('adapter', function() {
       User.use(mysql(settings));
       var user = new User({ fullname: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         User.options.mysql.db.query = query;
         statement.sql.should.equal(
-          'insert into "user" ("name") values (?)'
+          'insert into "user" ("name") values (\'alex\')'
         );
         cb(null, { insertId: 1 }, {});
       };
@@ -268,7 +268,7 @@ describe('adapter', function() {
 
       var query = User.options.mysql.db.query;
 
-      User.options.mysql.pool.query = function(statement, values, cb) {
+      User.options.mysql.pool.query = function(statement, cb) {
         cb(null, [{ id: 1, name: 'alex' }], {});
       };
 
@@ -290,7 +290,7 @@ describe('adapter', function() {
 
       var query = User.options.mysql.db.query;
 
-      User.options.mysql.pool.query = function(statement, values, cb) {
+      User.options.mysql.pool.query = function(statement, cb) {
         cb(null, [{ user_id: new Buffer('110E8400E29B11D4A716446655440000', 'hex') }], {});
       };
 
@@ -311,7 +311,7 @@ describe('adapter', function() {
 
       var query = User.options.mysql.db.query;
 
-      User.options.mysql.pool.query = function(statement, values, cb) {
+      User.options.mysql.pool.query = function(statement, cb) {
         cb(null, [{ user_id: 1, user_active: 1 }], {});
       };
 
@@ -327,9 +327,9 @@ describe('adapter', function() {
     it('finds model by id successfully', function(done) {
       var user = new User({id: 1, name: 'alex'});
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         statement.sql.should.equal(
-          'select "user".* from "user" where "user"."id" = ?'
+          'select "user".* from "user" where "user"."id" = 1'
         );
         User.options.mysql.db.query = query;
         for (var key in user.attributes) {
@@ -348,7 +348,7 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var user = new User({ name: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         callback(new Error('error finding user.'));
       };
       User.find(user.primary, function(err, found) {
@@ -363,9 +363,9 @@ describe('adapter', function() {
   describe('.count()', function() {
     it('counts models successfully', function(done) {
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         statement.sql.should.equal(
-          'select COUNT(*) as _count from "user" where "user"."name" = ?'
+          'select COUNT(*) as _count from "user" where "user"."name" = \'alex\''
         );
         cb(null, [{__count: 3}], {});
       };
@@ -380,7 +380,7 @@ describe('adapter', function() {
 
     it('passes errors to callback', function(done) {
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         cb(new Error("error removing all models."));
       };
       User.count({ name: 'alex' }, function(err) {
@@ -396,9 +396,8 @@ describe('adapter', function() {
     it('saves new model successfully', function(done) {
       var user = new User({name: 'alex'});
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         User.options.mysql.db.query = query;
-        values.should.include('alex');
         cb(null, { insertId: 1 }, {});
       };
       user.save(function(err) {
@@ -411,7 +410,7 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var user = new User({ name: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         User.options.mysql.db.query = query;
         callback(new Error('error saving user.'));
       };
@@ -428,12 +427,11 @@ describe('adapter', function() {
       var user = new User({id: 1, name: 'alex'});
       user.dirtyAttributes.length = 0;
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         User.options.mysql.db.query = query;
         statement.sql.should.equal(
-          'update "user" set "name" = ? where "user"."id" = ?'
+          'update "user" set "name" = \'jeff\' where "user"."id" = 1'
         );
-        values.should.include('jeff', 1);
         cb(null, [user], user.attributes);
       };
       user.name = 'jeff';
@@ -447,7 +445,7 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var user = new User({ name: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         callback(new Error('error updating user.'));
       };
       user.save(function(err) {
@@ -463,12 +461,11 @@ describe('adapter', function() {
     it('removes model successfully', function(done) {
       var user = new User({id: 1, name: 'alex'});
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         User.options.mysql.db.query = query;
         statement.sql.should.equal(
-          'delete from "user" where "user"."id" = ?'
+          'delete from "user" where "user"."id" = 1'
         );
-        values.should.include(1);
         cb(null, [], {});
       };
       user.remove(function(err) {
@@ -480,7 +477,7 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var user = new User({ id: 1, name: 'alex' });
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, callback) {
+      User.options.mysql.db.query = function(statement, callback) {
         User.options.mysql.db.query = query;
         callback(new Error('error removing user.'));
       };
@@ -499,7 +496,7 @@ describe('adapter', function() {
 
         cb(null, {
           release: function() {},
-          query: query = function(s, v, cb) {
+          query: query = function(s, cb) {
             count++;
             if (count > 2) {
               return cb(null, [{ user_id: 1 }], { id: 1 });
@@ -518,7 +515,7 @@ describe('adapter', function() {
 
     it('converts date attributes to proper format', function(done) {
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
         cb(null, [{ user_id: 1 }], { id: 1 });
       };
       User.findAll({
@@ -542,8 +539,8 @@ describe('adapter', function() {
 
     it('converts boolean attributes to 1 or 0', function(done) {
       var query = User.options.mysql.db.query;
-      User.options.mysql.db.query = function(statement, values, cb) {
-        User.options.mysql.db.query = function(statement, values, cb) {
+      User.options.mysql.db.query = function(statement, cb) {
+        User.options.mysql.db.query = function(statement, cb) {
           statement.sql.should.include('active" = ?');
           statement.sql.should.include('flagged" = ?');
           values.should.include(1);
@@ -563,8 +560,8 @@ describe('adapter', function() {
     describe('#toJSON()', function() {
       it('includes pagination properties', function(done) {
         var query = User.options.mysql.db.query;
-        User.options.mysql.db.query = function(statement, values, cb) {
-          User.options.mysql.db.query = function(statement, values, cb) {
+        User.options.mysql.db.query = function(statement, cb) {
+          User.options.mysql.db.query = function(statement, cb) {
             cb(null, [{ user_id: 1 }], { id: 1 });
           };
           cb(null, [{ user_id: 1 }], { id: 1 });
