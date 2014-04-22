@@ -1,9 +1,9 @@
 # mio-mysql
 
-[![Build Status](https://secure.travis-ci.org/alexmingoia/mio-mysql.png?branch=master)](http://travis-ci.org/alexmingoia/mio-mysql)
-[![Coverage Status](https://coveralls.io/repos/alexmingoia/mio-mysql/badge.png?branch=master)](https://coveralls.io/r/alexmingoia/mio-mysql?branch=master)
+[![Build Status](https://secure.travis-ci.org/mio/mysql.png?branch=master)](http://travis-ci.org/mio/mysql)
+[![Coverage Status](https://coveralls.io/repos/mio/mysql/badge.png?branch=master)](https://coveralls.io/r/mio/mysql?branch=master)
 [![NPM version](https://badge.fury.io/js/mio-mysql.png)](http://badge.fury.io/js/mio-mysql)
-[![Dependency Status](https://david-dm.org/alexmingoia/mio-mysql.png)](http://david-dm.org/alexmingoia/mio-mysql)
+[![Dependency Status](https://david-dm.org/mio/mysql.png)](http://david-dm.org/mio/mysql)
 
 MySQL storage plugin for [Mio][0].
 
@@ -179,5 +179,5 @@ npm test
 
 ## MIT Licensed
 
-[0]: https://github.com/alexmingoia/mio/
+[0]: https://github.com/mio/mio/
 [1]: https://github.com/goodybag/mongo-sql/
