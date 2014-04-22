@@ -16,10 +16,10 @@
   ],
   "dependencies": {
     "lingo": "~0.0.5",
-    "mongo-sql": "git://github.com/alexmingoia/mongo-sql.git#master",
     "mysql": "~2.0.0",
     "async": "~0.2.9",
-    "debug": "~0.7.4"
+    "debug": "~0.7.4",
+    "mongo-sql": "^2.5.5"
   },
   "devDependencies": {
     "mocha": "~1.12.1",
