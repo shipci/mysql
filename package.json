@@ -22,18 +22,22 @@
     "mongo-sql": "^2.5.5"
   },
   "devDependencies": {
-    "mocha": "~1.12.1",
     "mio": "~0.7.x",
     "should": "~1.2.2",
     "supertest": "~0.7.1",
-    "mocha-lcov-reporter": "~0.0.1",
-    "jscoverage": "~0.3.8",
-    "coveralls": "~2.6.0"
+    "gulp": "^3.6.1",
+    "mocha": "^1.18.2",
+    "vinyl-source-stream": "^0.1.1",
+    "gulp-coveralls": "^0.1.2",
+    "gulp-clean": "^0.2.4",
+    "gulp-instrument": "^0.1.0"
   },
   "main": "./lib/mysql.js",
   "scripts": {
-    "coverage": "./node_modules/jscoverage/bin/jscoverage lib lib-cov && JSCOV=1 ./node_modules/mocha/bin/mocha test --recursive --reporter html-cov > coverage.html",
-    "test": "./node_modules/mocha/bin/mocha --recursive --reporter spec"
+    "coverage": "./node_modules/gulp/bin/gulp.js coverage",
+    "prepublish": "./node_modules/gulp/bin/gulp.js coveralls",
+    "test": "./node_modules/gulp/bin/gulp.js test",
+    "clean": "./node_modules/gulp/bin/gulp.js clean"
   },
   "engines": {
     "node": ">= 0.8"
