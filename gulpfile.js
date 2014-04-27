@@ -1,19 +1,44 @@
-var clean = require('gulp-clean')
+var buffer = require('vinyl-buffer')
+  , clean = require('gulp-clean')
   , coveralls = require('gulp-coveralls')
   , gulp = require('gulp')
   , instrument = require('gulp-instrument')
   , source = require('vinyl-source-stream')
   , spawn = require('child_process').spawn
 
-gulp.task('coveralls', ['instrument'], function() {
-  if (!process.env.TRAVIS) return;
+gulp.task('coveralls', ['instrument'], function(done) {
+  if (!process.env.COVERALLS_REPO_TOKEN) {
+    return done(new Error("No COVERALLS_REPO_TOKEN set."));
+  }
 
   process.env.JSCOV=1;
 
-  return spawn('node_modules/mocha/bin/mocha', [
-    'test', '--reporter', 'json-lcov'
-  ])
-  .stdout.pipe(coveralls());
+  var err = '';
+
+  var mocha = spawn('node_modules/mocha/bin/mocha', [
+    'test', '--reporter', 'mocha-lcov-reporter'
+  ]);
+
+  mocha.stderr.on('data', function(chunk) {
+    err += chunk;
+  });
+
+  mocha.stdout
+    .pipe(source('lcov.json'))
+    .pipe(buffer())
+    .pipe(coveralls());
+
+  mocha.on('close', function(code) {
+    if (code) {
+      if (err) return done(new Error(err));
+
+      return done(new Error(
+        "Failed to send lcov data to coveralls."
+      ));
+    }
+
+    done();
+  });
 });
 
 gulp.task('coverage', ['instrument'], function() {
