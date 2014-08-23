@@ -24,14 +24,14 @@ mysql.mysql.createConnection = function(settings) {
 describe('module', function(done) {
   it('exports plugin factory', function(done) {
     should.exist(mysql);
-    mysql.should.be.a('function');
+    mysql.should.have.type('function');
     done();
   });
 
   it('constructs new mysql plugins', function(done) {
     var plugin = mysql(settings);
     should.exist(plugin);
-    plugin.should.be.a('function');
+    plugin.should.have.type('function');
     done();
   });
 });
@@ -272,7 +272,7 @@ describe('adapter', function() {
         cb(null, [{ id: 1, name: 'alex' }], {});
       };
 
-      User.find(1, function(err, user) {
+      User.findOne(1, function(err, user) {
         if (err) return done(err);
         user.should.have.property('fullname');
         user.fullname.should.equal('alex');
@@ -294,7 +294,7 @@ describe('adapter', function() {
         cb(null, [{ user_id: new Buffer('110E8400E29B11D4A716446655440000', 'hex') }], {});
       };
 
-      User.find('110E8400-E29B-11D4-A716-446655440000', function(err, user) {
+      User.findOne('110E8400-E29B-11D4-A716-446655440000', function(err, user) {
         if (err) return done(err);
         user.should.have.property('id', ('110E8400-E29B-11D4-A716-446655440000').toLowerCase());
         done();
@@ -315,7 +315,7 @@ describe('adapter', function() {
         cb(null, [{ user_id: 1, user_active: 1 }], {});
       };
 
-      User.find(1, function(err, user) {
+      User.findOne(1, function(err, user) {
         if (err) return done(err);
         user.should.have.property('active', true);
         done();
@@ -323,7 +323,7 @@ describe('adapter', function() {
     });
   });
 
-  describe('.find()', function() {
+  describe('.findOne()', function() {
     it('finds model by id successfully', function(done) {
       var user = new User({id: 1, name: 'alex'});
       var query = User.options.mysql.db.query;
@@ -337,7 +337,7 @@ describe('adapter', function() {
         }
         cb(null, [user.attributes], {});
       };
-      User.find(user.primary, function(err, found) {
+      User.findOne(user.primary, function(err, found) {
         if (err) return done(err);
         should.exist(found);
         user.primary.should.equal(found.primary);
@@ -351,7 +351,7 @@ describe('adapter', function() {
       User.options.mysql.db.query = function(statement, callback) {
         callback(new Error('error finding user.'));
       };
-      User.find(user.primary, function(err, found) {
+      User.findOne(user.primary, function(err, found) {
         User.options.mysql.db.query = query;
         should.exist(err);
         err.should.have.property('message', 'error finding user.');
@@ -505,7 +505,7 @@ describe('adapter', function() {
           }
         });
       };
-      User.find(1, function(err, user) {
+      User.findOne(1, function(err, user) {
         if (err) return done(err);
         should.exist(user);
         user.should.have.property('id', 1);
