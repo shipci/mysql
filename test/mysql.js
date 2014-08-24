@@ -381,9 +381,39 @@ describe('adapter', function() {
     it('passes errors to callback', function(done) {
       var query = User.options.mysql.db.query;
       User.options.mysql.db.query = function(statement, cb) {
-        cb(new Error("error removing all models."));
+        cb(new Error("error counting models."));
       };
       User.count({ name: 'alex' }, function(err) {
+        User.options.mysql.db.query = query;
+        should.exist(err);
+        err.should.have.property('message', 'error counting models.');
+        done();
+      });
+    });
+  });
+
+  describe('.removeAll()', function() {
+    it('removes models successfully', function(done) {
+      var query = User.options.mysql.db.query;
+      User.options.mysql.db.query = function(statement, cb) {
+        statement.sql.should.equal(
+          'delete from "user" where "user"."name" = \'alex\''
+        );
+        cb();
+      };
+      User.removeAll({ name: 'alex' }, function(err) {
+        User.options.mysql.db.query = query;
+        if (err) return done(err);
+        done();
+      });
+    });
+
+    it('passes errors to callback', function(done) {
+      var query = User.options.mysql.db.query;
+      User.options.mysql.db.query = function(statement, cb) {
+        cb(new Error("error removing all models."));
+      };
+      User.removeAll({ name: 'alex' }, function(err) {
         User.options.mysql.db.query = query;
         should.exist(err);
         err.should.have.property('message', 'error removing all models.');

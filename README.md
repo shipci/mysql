@@ -51,27 +51,18 @@ The collection returned by `Model.findAll()` has pagination properties on the
 array:
 
 ```javascript
-User.findAll({ page: 1, pageSize: 25 }, function(err, users) {
-  console.log(users);
-  // => [user1, user2, user3, ...]
-
-  console.log(users.total);
-  // => 73
-
-  console.log(users.pages);
-  // => 3
-
-  console.log(users.page);
-  // => 1
-
-  console.log(users.pageSize);
-  // => 25
-
-  console.log(users.offset);
-  // => 0
-
-  console.log(users.limit);
-  // => 25
+User.findAll()
+  .where({ created_at: { $lt: '2014-01-01' }})
+  .sort({ created_at: 'desc' })
+  .limit(25)
+  .exec(function(err, users) {
+    console.log(users);          // => [user1, user2, user3, ...]
+    console.log(users.total);    // => 73
+    console.log(users.pages);    // => 3
+    console.log(users.page);     // => 1
+    console.log(users.pageSize); // => 25
+    console.log(users.offset);   // => 0
+    console.log(users.limit);    // => 25
 });
 ```
 
