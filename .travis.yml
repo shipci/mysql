@@ -3,6 +3,3 @@ node_js:
 - '0.10'
 after_script:
 - "./node_modules/gulp/bin/gulp.js coveralls"
-env:
-  global:
-    secure: PYoMiNliezUwAv2NRgWm2hJNIgyqZq/u6eHCv8SxeTpXtXfu9xLAbu2uNzPhHORdf91/owQ37B79L0u18OxuXRwfo243JsnwU7p1brq8Cz5wDfLt3yxAY1+Ud0ArBRUNkyM0/F6ACQmBps8m+MTIdktRiEChnm1Og26/au2qVd8=
